@@ -5,6 +5,7 @@ admin.initializeApp();
 
 // Firebase
 const firebase = require("firebase");
+const db = admin.firestore();
 const firebaseConfig = {
   apiKey: "AIzaSyAg6iQzBiMhnRsC-VjpmcjTuBEvU0tHBdc",
   authDomain: "jamsocial-a2a87.firebaseapp.com",
@@ -22,9 +23,7 @@ const express = require("express");
 const app = express();
 
 app.get("/shouts", (request, response) => {
-  admin
-    .firestore()
-    .collection("shouts")
+  db.collection("shouts")
     .orderBy("shoutedAt", "desc")
     .get()
     .then(data => {
@@ -49,9 +48,7 @@ app.post("/shout", (request, response) => {
     shoutedAt: new Date().toISOString()
   };
 
-  admin
-    .firestore()
-    .collection("shouts")
+  db.collection("shouts")
     .add(newShout)
     .then(doc => {
       response.json({ message: `document ${doc.id} created successfully` });
@@ -62,7 +59,7 @@ app.post("/shout", (request, response) => {
     });
 });
 
-// Signip
+// Signup
 app.post("/signup", (request, response) => {
   const newUser = {
     email: request.body.email,
@@ -71,18 +68,34 @@ app.post("/signup", (request, response) => {
     name: request.body.name
   };
   // validation
-  firebase
-    .auth()
-    .createUserWithEmailAndPassword(newUser.email, newUser.password)
+  db.doc(`/users/${newUser.name}`)
+    .get()
+    .then(doc => {
+      if (doc.exists) {
+        return response
+          .status(400)
+          .json({ name: "this name is already taken" });
+      } else {
+        return firebase
+          .auth()
+          .createUserWithEmailAndPassword(newUser.email, newUser.password);
+      }
+    })
     .then(data => {
-      return response
-        .status(201)
-        .json({ message: `User ${data.user.uid} signed up successfully` });
+      return data.user.getIdToken();
+    })
+    .then(token => {
+      return response.status(201).json({ token: token });
     })
     .catch(error => {
-      console.log(error);
-      return response.status(500).json({ error: error.code });
+      console.error(error);
+      if (error.code === "auth/email-already-in-use") {
+        return response.status(400).json({ email: "Email already taken" });
+      } else {
+        return response.status(500).json({ error: error.code });
+      }
     });
+  //////////////
 });
 
 exports.api = functions.region("europe-west2").https.onRequest(app);
