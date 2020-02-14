@@ -5,16 +5,37 @@ admin.initializeApp();
 
 // Firebase
 const firebase = require("firebase");
+const firebaseConfig = {
+  apiKey: "AIzaSyAg6iQzBiMhnRsC-VjpmcjTuBEvU0tHBdc",
+  authDomain: "jamsocial-a2a87.firebaseapp.com",
+  databaseURL: "https://jamsocial-a2a87.firebaseio.com",
+  projectId: "jamsocial-a2a87",
+  storageBucket: "jamsocial-a2a87.appspot.com",
+  messagingSenderId: "1044093059363",
+  appId: "1:1044093059363:web:23c84661c267793a328c96",
+  measurementId: "G-PBQQ7SFTQ7"
+};
+
 const db = admin.firestore();
-import { firebaseConfig } from "./firebaseConfig";
 firebase.initializeApp(firebaseConfig);
 
 // Express
 const express = require("express");
 const app = express();
 
-// Other imports
-import { isEmpty, isEmail } from "./helpers";
+// Other Functions
+const isEmpty = string => {
+  if (string.trim() === "") return true;
+  else return false;
+};
+
+const isEmail = email => {
+  const regEx = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+  if (email.match(regEx)) return true;
+  else return false;
+};
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 app.get("/shouts", (request, response) => {
   db.collection("shouts")
@@ -75,7 +96,7 @@ app.post("/signup", (request, response) => {
   if (newUser.password !== newUser.confirmPassword) {
     errors.confirmPassword = "Passwords must match";
   }
-  if (isEmail(newUser.name)) {
+  if (isEmpty(newUser.name)) {
     errors.name = "can't be empty";
   }
   ////////////////////////
