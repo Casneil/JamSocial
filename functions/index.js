@@ -145,4 +145,29 @@ app.post("/signup", (request, response) => {
     });
 });
 
+// Login
+app.post("/login", (request,response) => {
+  const user ={
+    email: request.body.email,
+    password: request.body.password
+
+  }
+  let errors ={};
+  if(isEmpty(user.email)) errors.email = "can't be empty!";
+  if(isEmpty(user.password)) errors.password = "can't be empty!";
+  if(Object.keys(error.length > 0))retrun response.status(400).json(errors)
+
+  firebase.auth().signInWithEmailAndPassword(user.email, user.password)
+  .then(data => {
+    return data.getIdToken();
+  })
+  .then(token => {
+    return response.json(token)
+  })
+  .catch(error => console.error(error))
+  return response.status(500).json({error: error.code})
+
+})
+
+
 exports.api = functions.region("europe-west2").https.onRequest(app);
