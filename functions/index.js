@@ -6,21 +6,15 @@ admin.initializeApp();
 // Firebase
 const firebase = require("firebase");
 const db = admin.firestore();
-const firebaseConfig = {
-  apiKey: "AIzaSyAg6iQzBiMhnRsC-VjpmcjTuBEvU0tHBdc",
-  authDomain: "jamsocial-a2a87.firebaseapp.com",
-  databaseURL: "https://jamsocial-a2a87.firebaseio.com",
-  projectId: "jamsocial-a2a87",
-  storageBucket: "jamsocial-a2a87.appspot.com",
-  messagingSenderId: "1044093059363",
-  appId: "1:1044093059363:web:23c84661c267793a328c96",
-  measurementId: "G-PBQQ7SFTQ7"
-};
+import { firebaseConfig } from "./firebaseConfig";
 firebase.initializeApp(firebaseConfig);
 
 // Express
 const express = require("express");
 const app = express();
+
+// Other imports
+import { isEmpty, isEmail } from "./helpers";
 
 app.get("/shouts", (request, response) => {
   db.collection("shouts")
@@ -68,6 +62,28 @@ app.post("/signup", (request, response) => {
     name: request.body.name
   };
   // validation
+  let errors = {};
+  if (isEmpty(newUser.email)) {
+    errors.email = "Can't be empty";
+  } else if (!isEmail(newUser.email)) {
+    errors.email = "Must be a valid email address";
+  }
+
+  if (isEmpty(newUser.password)) {
+    errors.password = "Can't not be empty!";
+  }
+  if (newUser.password !== newUser.confirmPassword) {
+    errors.confirmPassword = "Passwords must match";
+  }
+  if (isEmail(newUser.name)) {
+    errors.name = "can't be empty";
+  }
+  ////////////////////////
+
+  // befor submission
+  if (Object.keys(errors).length > 0) return response.status(400).json(errors);
+  // validation
+  let token, userID;
   db.doc(`/users/${newUser.name}`)
     .get()
     .then(doc => {
@@ -82,9 +98,20 @@ app.post("/signup", (request, response) => {
       }
     })
     .then(data => {
+      userID = data.user.uid;
       return data.user.getIdToken();
     })
-    .then(token => {
+    .then(IdToken => {
+      token = IdToken;
+      const userCredentials = {
+        name: newUser.name,
+        email: newUser.email,
+        joinedOn: new Date().toISOString(),
+        userId: userID
+      };
+      return db.doc(`/users/${newUser.name}`).set(userCredentials);
+    })
+    .then(() => {
       return response.status(201).json({ token: token });
     })
     .catch(error => {
@@ -95,7 +122,6 @@ app.post("/signup", (request, response) => {
         return response.status(500).json({ error: error.code });
       }
     });
-  //////////////
 });
 
 exports.api = functions.region("europe-west2").https.onRequest(app);
