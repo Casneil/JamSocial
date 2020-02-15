@@ -84,12 +84,13 @@ exports.login = (request, response) => {
     })
     .catch(error => {
       console.error(error);
-      if (error.code === "auth/wrong-password") {
-        return response
-          .status(403)
-          .json({ general: "Credentials should match, please try again." });
-      } else {
-        return response.status(500).json({ error: error.code });
-      }
+      //   if (error.code === "auth/wrong-password") {
+      //     return response
+      response
+        .status(403)
+        .json({ general: "Credentials didn't match, please try again." });
+      //   } else {
+      //     return response.status(500).json({ error: error.code });
+      //   }
     });
 };

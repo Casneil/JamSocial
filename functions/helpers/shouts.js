@@ -1,4 +1,4 @@
-const db = require("../util/admin");
+const { db } = require("../util/admin");
 
 exports.getShouts = (request, response) => {
   db.collection("shouts")
@@ -31,7 +31,9 @@ exports.makeShout = (request, response) => {
   const newShout = {
     body: request.body.body,
     userSubmit: request.user.name,
-    shoutedAt: new Date().toISOString()
+    shoutedAt: new Date().toISOString(),
+    likeCount: 0,
+    commentCount: 0
   };
 
   db.collection("shouts")
