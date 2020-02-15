@@ -35,8 +35,42 @@ const isEmail = email => {
   else return false;
 };
 
+const firbaseAuth = (request, response, next) => {
+  let idToken;
+  if (
+    request.headers.authorization &&
+    request.headers.authorization.startsWith("Bearer ")
+  ) {
+    idToken = request.headers.authorization.split("Bearer ")[1];
+  } else {
+    console.error("No token found");
+    return response.status(403).json({ error: "Unauthorized" });
+  }
+  admin
+    .auth()
+    .verifyIdToken(idToken)
+    .then(decodedToken => {
+      request.user = decodedToken;
+      console.log(decodedToken);
+      return db
+        .collection("users")
+        .where("userId", "==", request.user.uid)
+        .limit(1)
+        .get();
+    })
+    .then(data => {
+      request.user.name = data.docs[0].data().name;
+      return next();
+    })
+    .catch(error => {
+      console.error(`Token verification error ${error}`);
+      return response.status(403).json(error);
+    });
+};
+
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+// Get Shouts///////////////////////////////////
 app.get("/shouts", (request, response) => {
   db.collection("shouts")
     .orderBy("shoutedAt", "desc")
@@ -56,10 +90,14 @@ app.get("/shouts", (request, response) => {
     .catch(error => console.log(error));
 });
 
-app.post("/shout", (request, response) => {
+// Post Shout////////////////////////////
+app.post("/shout", firbaseAuth, (request, response) => {
+  if (request.body.body.trim() === "") {
+    return response.status(400).json({ body: "Body can't be empty" });
+  }
   const newShout = {
     body: request.body.body,
-    userSubmit: request.body.userSubmit,
+    userSubmit: request.user.name,
     shoutedAt: new Date().toISOString()
   };
 
@@ -74,7 +112,7 @@ app.post("/shout", (request, response) => {
     });
 });
 
-// Signup
+// Signup///////////////////////////////
 app.post("/signup", (request, response) => {
   const newUser = {
     email: request.body.email,
@@ -82,7 +120,7 @@ app.post("/signup", (request, response) => {
     confirmPassword: request.body.confirmPassword,
     name: request.body.name
   };
-  // validation
+  // validation//////////////////////////
   let errors = {};
   if (isEmpty(newUser.email)) {
     errors.email = "Can't be empty";
@@ -145,29 +183,36 @@ app.post("/signup", (request, response) => {
     });
 });
 
-// Login
-app.post("/login", (request,response) => {
-  const user ={
+// Login//////////////////////////////////////////
+app.post("/login", (request, response) => {
+  const user = {
     email: request.body.email,
     password: request.body.password
+  };
+  let errors = {};
+  if (isEmpty(user.email)) errors.email = "can't be empty!";
+  if (isEmpty(user.password)) errors.password = "can't be empty!";
+  if (Object.keys(errors).length > 0) return response.status(400).json(errors);
 
-  }
-  let errors ={};
-  if(isEmpty(user.email)) errors.email = "can't be empty!";
-  if(isEmpty(user.password)) errors.password = "can't be empty!";
-  if(Object.keys(error.length > 0))retrun response.status(400).json(errors)
-
-  firebase.auth().signInWithEmailAndPassword(user.email, user.password)
-  .then(data => {
-    return data.getIdToken();
-  })
-  .then(token => {
-    return response.json(token)
-  })
-  .catch(error => console.error(error))
-  return response.status(500).json({error: error.code})
-
-})
-
+  firebase
+    .auth()
+    .signInWithEmailAndPassword(user.email, user.password)
+    .then(data => {
+      return data.user.getIdToken();
+    })
+    .then(token => {
+      return response.json({ token });
+    })
+    .catch(error => {
+      console.error(error);
+      if (error.code === "auth/wrong-password") {
+        return response
+          .status(403)
+          .json({ general: "Credentials should match, please try again." });
+      } else {
+        return response.status(500).json({ error: error.code });
+      }
+    });
+});
 
 exports.api = functions.region("europe-west2").https.onRequest(app);
