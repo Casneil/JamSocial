@@ -1,22 +1,18 @@
 const functions = require("firebase-functions");
-const admin = require("firebase-admin");
-
-admin.initializeApp();
 
 // Firebase
 const firebase = require("firebase");
-const firebaseConfig = {
-  apiKey: "AIzaSyAg6iQzBiMhnRsC-VjpmcjTuBEvU0tHBdc",
-  authDomain: "jamsocial-a2a87.firebaseapp.com",
-  databaseURL: "https://jamsocial-a2a87.firebaseio.com",
-  projectId: "jamsocial-a2a87",
-  storageBucket: "jamsocial-a2a87.appspot.com",
-  messagingSenderId: "1044093059363",
-  appId: "1:1044093059363:web:23c84661c267793a328c96",
-  measurementId: "G-PBQQ7SFTQ7"
-};
+// const firebaseConfig = {
+//   apiKey: "AIzaSyAg6iQzBiMhnRsC-VjpmcjTuBEvU0tHBdc",
+//   authDomain: "jamsocial-a2a87.firebaseapp.com",
+//   databaseURL: "https://jamsocial-a2a87.firebaseio.com",
+//   projectId: "jamsocial-a2a87",
+//   storageBucket: "jamsocial-a2a87.appspot.com",
+//   messagingSenderId: "1044093059363",
+//   appId: "1:1044093059363:web:23c84661c267793a328c96",
+//   measurementId: "G-PBQQ7SFTQ7"
+// };
 
-const db = admin.firestore();
 firebase.initializeApp(firebaseConfig);
 
 // Express
@@ -24,6 +20,9 @@ const express = require("express");
 const app = express();
 
 // Other Functions
+const { getShouts, makeShout } = require("./helpers/shouts");
+const { signup, login } = require("./helpers/users");
+
 const isEmpty = string => {
   if (string.trim() === "") return true;
   else return false;
@@ -71,148 +70,15 @@ const firbaseAuth = (request, response, next) => {
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 // Get Shouts///////////////////////////////////
-app.get("/shouts", (request, response) => {
-  db.collection("shouts")
-    .orderBy("shoutedAt", "desc")
-    .get()
-    .then(data => {
-      let shouts = [];
-      data.forEach(doc => {
-        shouts.push({
-          shoutId: doc.id,
-          body: doc.data().body,
-          userSubmit: doc.data().body.userSubmit,
-          shoutedAt: doc.data().shoutedAt
-        });
-      });
-      return response.json(shouts);
-    })
-    .catch(error => console.log(error));
-});
+app.get("/shouts", getShouts);
 
 // Post Shout////////////////////////////
-app.post("/shout", firbaseAuth, (request, response) => {
-  if (request.body.body.trim() === "") {
-    return response.status(400).json({ body: "Body can't be empty" });
-  }
-  const newShout = {
-    body: request.body.body,
-    userSubmit: request.user.name,
-    shoutedAt: new Date().toISOString()
-  };
-
-  db.collection("shouts")
-    .add(newShout)
-    .then(doc => {
-      response.json({ message: `document ${doc.id} created successfully` });
-    })
-    .catch(error => {
-      response.status(500).json({ error: "something went wrong" });
-      console.log(error);
-    });
-});
+app.post("/shout", firbaseAuth, makeShout);
 
 // Signup///////////////////////////////
-app.post("/signup", (request, response) => {
-  const newUser = {
-    email: request.body.email,
-    password: request.body.password,
-    confirmPassword: request.body.confirmPassword,
-    name: request.body.name
-  };
-  // validation//////////////////////////
-  let errors = {};
-  if (isEmpty(newUser.email)) {
-    errors.email = "Can't be empty";
-  } else if (!isEmail(newUser.email)) {
-    errors.email = "Must be a valid email address";
-  }
-
-  if (isEmpty(newUser.password)) {
-    errors.password = "Can't not be empty!";
-  }
-  if (newUser.password !== newUser.confirmPassword) {
-    errors.confirmPassword = "Passwords must match";
-  }
-  if (isEmpty(newUser.name)) {
-    errors.name = "can't be empty";
-  }
-  ////////////////////////
-
-  // befor submission
-  if (Object.keys(errors).length > 0) return response.status(400).json(errors);
-  // validation
-  let token, userID;
-  db.doc(`/users/${newUser.name}`)
-    .get()
-    .then(doc => {
-      if (doc.exists) {
-        return response
-          .status(400)
-          .json({ name: "this name is already taken" });
-      } else {
-        return firebase
-          .auth()
-          .createUserWithEmailAndPassword(newUser.email, newUser.password);
-      }
-    })
-    .then(data => {
-      userID = data.user.uid;
-      return data.user.getIdToken();
-    })
-    .then(IdToken => {
-      token = IdToken;
-      const userCredentials = {
-        name: newUser.name,
-        email: newUser.email,
-        joinedOn: new Date().toISOString(),
-        userId: userID
-      };
-      return db.doc(`/users/${newUser.name}`).set(userCredentials);
-    })
-    .then(() => {
-      return response.status(201).json({ token: token });
-    })
-    .catch(error => {
-      console.error(error);
-      if (error.code === "auth/email-already-in-use") {
-        return response.status(400).json({ email: "Email already taken" });
-      } else {
-        return response.status(500).json({ error: error.code });
-      }
-    });
-});
+app.post("/signup", signup);
 
 // Login//////////////////////////////////////////
-app.post("/login", (request, response) => {
-  const user = {
-    email: request.body.email,
-    password: request.body.password
-  };
-  let errors = {};
-  if (isEmpty(user.email)) errors.email = "can't be empty!";
-  if (isEmpty(user.password)) errors.password = "can't be empty!";
-  if (Object.keys(errors).length > 0) return response.status(400).json(errors);
-
-  firebase
-    .auth()
-    .signInWithEmailAndPassword(user.email, user.password)
-    .then(data => {
-      return data.user.getIdToken();
-    })
-    .then(token => {
-      return response.json({ token });
-    })
-    .catch(error => {
-      console.error(error);
-      if (error.code === "auth/wrong-password") {
-        return response
-          .status(403)
-          .json({ general: "Credentials should match, please try again." });
-      } else {
-        return response.status(500).json({ error: error.code });
-      }
-    });
-});
+app.post("/login", login);
 
 exports.api = functions.region("europe-west2").https.onRequest(app);
