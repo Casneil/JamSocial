@@ -113,9 +113,7 @@ exports.uploadImg = (request, response) => {
     if (mimetype !== "image/jpeg" && mimetype !== "image/png") {
       return response.status(400).json({ error: "Wrong file type submitted" });
     }
-    // my.image.png => ['my', 'image', 'png']
     const imageExtension = filename.split(".")[filename.split(".").length - 1];
-    // 32756238461724837.png
     imageName = `${Math.round(
       Math.random() * 1000000000000
     ).toString()}.${imageExtension}`;
@@ -140,7 +138,7 @@ exports.uploadImg = (request, response) => {
         return db.doc(`/users/${request.user.name}`).update({ imageUrl });
       })
       .then(() => {
-        return response.json({ message: "image uploaded successfully" });
+        return response.json({ message: "image uploaded!" });
       })
       .catch(err => {
         console.error(err);
