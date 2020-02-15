@@ -19,6 +19,8 @@ exports.signup = (request, response) => {
 
   if (!valid) return response.status(400).json(errors);
   // validation////////////////////////////////////////
+
+  const userPic = "user-pic.png";
   let token, userID;
   db.doc(`/users/${newUser.name}`)
     .get()
@@ -43,6 +45,7 @@ exports.signup = (request, response) => {
         name: newUser.name,
         email: newUser.email,
         joinedOn: new Date().toISOString(),
+        imageUrl: `https://firebasestorage.googleapis.com/v0/b/${firebaseConfig.storageBucket}/o/${userPic}?alt=media`,
         userId: userID
       };
       return db.doc(`/users/${newUser.name}`).set(userCredentials);
