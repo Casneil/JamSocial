@@ -72,7 +72,6 @@ exports.login = (request, response) => {
 
   if (!valid) return response.status(400).json(errors);
   // validation////////////////////////////////////////
-
   firebase
     .auth()
     .signInWithEmailAndPassword(user.email, user.password)
@@ -94,3 +93,5 @@ exports.login = (request, response) => {
       //   }
     });
 };
+
+exports.uploadImg = (request, response) => {};
