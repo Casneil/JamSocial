@@ -1,4 +1,4 @@
-const { db } = require("../util/admin");
+const { admin, db } = require("../util/admin");
 
 const firebaseConfig = require("../util/firebaseConfig");
 
@@ -94,4 +94,47 @@ exports.login = (request, response) => {
     });
 };
 
-exports.uploadImg = (request, response) => {};
+exports.uploadImg = (request, response) => {
+  const path = require("path");
+  const Busboy = require("busboy");
+  const os = require("os");
+  const fs = requier("fs");
+
+  const busboy = new Busboy({ headers: request.headers });
+
+  let imgFileName;
+  let imgToUpload = {};
+  busboy.on("file", (fieldname, file, filename, encoding, mimetype) => {
+    const imgExtension = filename.split(".")[filename.split(".").length - 1];
+    imgFileName = `${Math.round(Math.random() * 1000000000)}.${imgExtension}`;
+    const filepath = path.join(os.tmpdir(), imgFileName);
+    imgToUpload = { filepath: filepath, mimetype };
+    file.pipe(fs.createWriteStream(filepath));
+  });
+  busboy.on("finish", () => {
+    admin
+      .storage()
+      .bucket()
+      .upload(imgToUpload.filepath, {
+        resumable: false,
+        metadata: {
+          metadata: {
+            contentType: imgToUpload.mimetype
+          }
+        }
+      })
+      .then(() => {
+        const imgUrl = `https://firebasestorage.googleapis.com/v0/b/${firebaseConfig.storageBucket}/o/${imgFileName}?alt=media`;
+        return db
+          .doc(`/users/${request.user.name}`)
+          .update({ imageUrl: imgUrl });
+      })
+      .then(() => {
+        return response.json({ message: "Image uploaded! " });
+      })
+      .catch(error => {
+        console.error(error);
+        return response.status(500).json({ error: error.code });
+      });
+  });
+};

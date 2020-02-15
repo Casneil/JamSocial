@@ -17,7 +17,7 @@ app.post("/shout", firbaseAuth, makeShout);
 // Get Shouts///////////////////////////////////
 app.get("/shouts", getShouts);
 // Image upload///////////////////
-app.post("/user/image", uploadImg);
+app.post("/user/image", firbaseAuth, uploadImg);
 // Signup///////////////////////////////
 app.post("/signup", signup);
 
