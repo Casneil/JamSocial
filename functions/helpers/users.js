@@ -5,7 +5,11 @@ const firebaseConfig = require("../util/firebaseConfig");
 const firebase = require("firebase");
 firebase.initializeApp(firebaseConfig);
 
-const { validateSignupData, validateLoginData } = require("../util/validators");
+const {
+  validateSignupData,
+  validateLoginData,
+  formatUserDetails
+} = require("../util/validators");
 
 exports.signup = (request, response) => {
   const newUser = {
@@ -146,4 +150,19 @@ exports.uploadImg = (request, response) => {
       });
   });
   busboy.end(request.rawBody);
+};
+
+// Add user Details
+exports.addUserDetails = (request, response) => {
+  let userDetails = formatUserDetails(request.body);
+
+  db.doc(`/users/${request.user.name}`)
+    .update(userDetails)
+    .then(() => {
+      return response.json({ message: "Details added!" });
+    })
+    .catch(error => {
+      console.error(error);
+      return response.status(500).json({ error: error.code });
+    });
 };
