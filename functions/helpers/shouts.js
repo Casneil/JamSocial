@@ -13,6 +13,7 @@ exports.getShouts = (request, response) => {
           body: doc.data().body,
           userSubmit: doc.data().body.userSubmit,
           shoutedAt: doc.data().shoutedAt,
+          userImage: doc.data().imageUrl,
           commentCount: doc.data().commentCount,
           likeCount: doc.data().likeCount
         });
@@ -58,7 +59,7 @@ exports.getSingleShout = (request, response) => {
 // reply to single shout ////////////////////////////////////////////////////////////
 exports.replyToShout = (request, response) => {
   if (request.body.body.trim() === "")
-    return response.status(400).json({ error: "Can't be empty" });
+    return response.status(400).json({ comment: "Can't be empty" });
 
   const newShout = {
     body: request.body.body,

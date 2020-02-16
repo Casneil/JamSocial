@@ -79,6 +79,7 @@ exports.NotificationOnLike = functions
       })
       .catch(error => console.error(error));
   });
+
 exports.NotificationOnUnLike = functions
   .region("europe-west2")
   .firestore.document("likes/{id}")
@@ -91,6 +92,7 @@ exports.NotificationOnUnLike = functions
         return;
       });
   });
+
 exports.NotificationOnComment = functions
   .region("europe-west2")
   .firestore.document("comments/{id}")
