@@ -1,4 +1,4 @@
-import React, { Fragment } from "react";
+import React from "react";
 import { Switch, Route } from "react-router-dom";
 
 import Home from "../Views/home";
@@ -7,13 +7,13 @@ import SignUp from "../Views/signUp";
 
 const Router = () => {
   return (
-    <Fragment>
+    <div className="container">
       <Switch>
         <Route exact path="/" component={Home} />
         <Route exact path="/login" component={Login} />
         <Route exact path="/signup" component={SignUp} />
       </Switch>
-    </Fragment>
+    </div>
   );
 };
 

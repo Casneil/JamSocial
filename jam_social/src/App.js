@@ -6,10 +6,12 @@ import Router from "./components/Router";
 
 function App() {
   return (
-    <div className="App">
+    <>
       <Navbar />
-      <Router />
-    </div>
+      <div>
+        <Router />
+      </div>
+    </>
   );
 }
 
