@@ -49,53 +49,63 @@ app.post("/user/image", firbaseAuth, uploadImg);
 
 exports.api = functions.region("europe-west2").https.onRequest(app);
 
-exports.notificationOnLike = functions
-  .region("europe-west1")
-  .firestore.document("likes/{id")
+exports.NotificationOnLike = functions
+  .region("europe-west2")
+  .firestore.document("likes/{id}")
   .onCreate(snapshot => {
-    db.doc(`/shouts/${snapshot.data().shoutId}`)
+    return db
+      .doc(`/shouts/${snapshot.data().shoutId}`)
       .get()
       .then(doc => {
-        if (doc.exists) {
-          return db.doc(`/notifications${snapshot.id}`).set({
+        if (
+          doc.exists &&
+          doc.data().userSubmit !== snapshot.data().userSubmit
+        ) {
+          return db.doc(`/notifications/${snapshot.id}`).set({
             shoutedAt: new Date().toISOString(),
-            reciever: doc.data().userSubmit,
             sender: snapshot.data().userSubmit,
+            reciever: doc.data().userSubmit,
             type: "like",
             shoutId: doc.id,
-            seen: false
+            read: false
           });
         }
       })
-      .then(() => {
-        return;
-      })
+      .catch(error => console.error(error));
+  });
+exports.NotificationOnUnLike = functions
+  .region("europe-west2")
+  .firestore.document("likes/{id}")
+  .onDelete(snapshot => {
+    return db
+      .doc(`/notifications/${snapshot.id}`)
+      .delete()
       .catch(error => {
         console.error(error);
         return;
       });
   });
-
-exports.notificationOnComment = functions
-  .region("europe-west1")
-  .firestore.document("comments/{id")
+exports.NotificationOnComment = functions
+  .region("europe-west2")
+  .firestore.document("comments/{id}")
   .onCreate(snapshot => {
-    db.doc(`/shouts/${snapshot.data().shoutId}`)
+    return db
+      .doc(`/shouts/${snapshot.data().shoutId}`)
       .get()
       .then(doc => {
-        if (doc.exists) {
-          return db.doc(`/notifications${snapshot.id}`).set({
+        if (
+          doc.exists &&
+          doc.data().userSubmit !== snapshot.data().userSubmit
+        ) {
+          return db.doc(`/notifications/${snapshot.id}`).set({
             shoutedAt: new Date().toISOString(),
-            reciever: doc.data().userSubmit,
             sender: snapshot.data().userSubmit,
+            reciever: doc.data().userSubmit,
             type: "comment",
             shoutId: doc.id,
-            seen: false
+            read: false
           });
         }
-      })
-      .then(() => {
-        return;
       })
       .catch(error => {
         console.error(error);
@@ -103,17 +113,62 @@ exports.notificationOnComment = functions
       });
   });
 
-exports.notificationOnUnlike = functions
-  .region("europe-west1")
-  .firestore.document("likes/{id")
-  .onDelete(snapshot => {
-    db.doc(`/notifications/${snapshot.id}`)
-      .delete()
-      .then(() => {
-        return;
+exports.onUserImageChange = functions
+  .region("europe-west2")
+  .firestore.document("/users/{userId}")
+  .onUpdate(change => {
+    console.log(change.before.data());
+    console.log(change.after.data());
+    if (change.before.data().imageUrl !== change.after.data().imageUrl) {
+      console.log("image has changed");
+      const batch = db.batch();
+      return db
+        .collection("shouts")
+        .where("userSubmit", "==", change.before.data().name)
+        .get()
+        .then(data => {
+          data.forEach(doc => {
+            const shout = db.doc(`/shouts/${doc.id}`);
+            batch.update(shout, { userImage: change.after.data().imageUrl });
+          });
+          return batch.commit();
+        });
+    } else return true;
+  });
+
+exports.onShoutDelete = functions
+  .region("europe-west2")
+  .firestore.document("/shouts/{shoutId}")
+  .onDelete((snapshot, context) => {
+    const shoutId = context.params.shoutId;
+    const batch = db.batch();
+    return db
+      .collection("comments")
+      .where("shoutId", "==", shoutId)
+      .get()
+      .then(data => {
+        data.forEach(doc => {
+          batch.delete(db.doc(`/comments/${doc.id}`));
+        });
+        return db
+          .collection("likes")
+          .where("shoutId", "==", shoutId)
+          .get();
       })
-      .catch(error => {
-        console.error(error);
-        return;
-      });
+      .then(data => {
+        data.forEach(doc => {
+          batch.delete(db.doc(`/likes/${doc.id}`));
+        });
+        return db
+          .collection("notifications")
+          .where("shoutId", "==", shoutId)
+          .get();
+      })
+      .then(data => {
+        data.forEach(doc => {
+          batch.delete(db.doc(`/notifications/${doc.id}`));
+        });
+        return batch.commit();
+      })
+      .catch(error => console.error(error));
   });
