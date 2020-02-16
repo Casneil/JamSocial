@@ -1,5 +1,6 @@
 const { db } = require("../util/admin");
 
+// Get all shouts ////////////////////////////////////////////////////////////
 exports.getShouts = (request, response) => {
   db.collection("shouts")
     .orderBy("shoutedAt", "desc")
@@ -23,7 +24,7 @@ exports.getShouts = (request, response) => {
       response.status(500).json({ error: error.code });
     });
 };
-
+// Get single shout ////////////////////////////////////////////////////////////
 exports.getSingleShout = (request, response) => {
   let shoutData = {};
   db.doc(`/shouts/${request.params.shoutId}`)
@@ -37,6 +38,7 @@ exports.getSingleShout = (request, response) => {
       shoutData.shoutId = doc.id;
       return db
         .collection("comments")
+        .orderBy("shoutedAt", "desc")
         .where("shoutId", "==", request.params.shoutId)
         .get();
     })
@@ -53,6 +55,38 @@ exports.getSingleShout = (request, response) => {
     });
 };
 
+// reply to single shout ////////////////////////////////////////////////////////////
+exports.replyToShout = (request, response) => {
+  if (request.body.body.trim() === "")
+    return response.status(400).json({ error: "Can't be empty" });
+
+  const newShout = {
+    body: request.body.body,
+    shoutedAt: new Date().toISOString(),
+    shoutId: request.params.shoutId,
+    userSubmit: request.user.name,
+    userImage: request.user.imageUrl
+  };
+  db.doc(`/shouts/${request.params.shoutId}`)
+    .get()
+    .then(doc => {
+      if (!doc.exists) {
+        return response.status(404).json({ error: "shout not found!" });
+      }
+      return db.collection("comments").add(newShout);
+    })
+    .then(() => {
+      response.json(newShout);
+    })
+    .catch(error => {
+      console.log(error);
+      response
+        .status(500)
+        .json({ error: `Oops something went wrong ${error.code}` });
+    });
+};
+
+// Make a shout ////////////////////////////////////////////////////////////
 exports.makeShout = (request, response) => {
   if (request.body.body.trim() === "") {
     return response.status(400).json({ body: "Body can't be empty" });
