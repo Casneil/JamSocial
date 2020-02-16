@@ -3,9 +3,12 @@ const firbaseAuth = require("./util/firebaseAuth");
 
 const {
   getShouts,
+  unlikeShout,
+  likeShout,
   makeShout,
   getSingleShout,
-  replyToShout
+  replyToShout,
+  deleteShout
 } = require("./helpers/shouts");
 const {
   signup,
@@ -30,10 +33,13 @@ app.get("/shouts", getShouts);
 // Single shout ////////////////////////
 app.get("/shout/:shoutId", getSingleShout);
 // Like shout /////////////////////////////////
+app.get("/shout/:shoutId/like", firbaseAuth, likeShout);
+// Unlike shout ///////////////////////////////
+app.get("/shout/:shoutId/unlike", firbaseAuth, unlikeShout);
 // Delete shout ///////////////////////////////
+app.delete("/shout/:shoutId", firbaseAuth, deleteShout);
 // Comment on shout ///////////////////////////
 app.post("/shout/:shoutId/reply", firbaseAuth, replyToShout);
-// Unlike shout ///////////////////////////////
 // User details
 app.post("/user", firbaseAuth, addUserDetails);
 app.get("/user", firbaseAuth, getAuthedUser);
