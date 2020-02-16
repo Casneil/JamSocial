@@ -186,6 +186,26 @@ exports.getAuthedUser = (request, response) => {
       data.forEach(doc => {
         userData.likes.push(doc.data());
       });
+      return db
+        .collection("notifications")
+        .where("reciever", "==", request.user.name)
+        .orderBy("shoutedAt", "desc")
+        .limit(12)
+        .get();
+    })
+    .then(data => {
+      userData.notifications = [];
+      data.forEach(doc => {
+        userData.notifications.push({
+          reciever: doc.data().reciever,
+          sender: doc.data().sender,
+          shoutedAt: doc.data().shoutedAt,
+          type: doc.data().type,
+          read: doc.data().read,
+          shoutId: doc.data().shoutId,
+          notificationId: doc.id
+        });
+      });
       return response.json(userData);
     })
     .catch(error => {
