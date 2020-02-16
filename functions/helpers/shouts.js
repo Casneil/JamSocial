@@ -24,6 +24,35 @@ exports.getShouts = (request, response) => {
     });
 };
 
+exports.getSingleShout = (request, response) => {
+  let shoutData = {};
+  db.doc(`/shouts/${request.params.shoutId}`)
+    .get()
+    .then(doc => {
+      if (!doc.exists) {
+        return response.status(404).json({ error: "Shout not found!" });
+      } else {
+        shoutData = doc.data();
+      }
+      shoutData.shoutId = doc.id;
+      return db
+        .collection("comments")
+        .where("shoutId", "==", request.params.shoutId)
+        .get();
+    })
+    .then(data => {
+      shoutData.comments = [];
+      data.forEach(doc => {
+        shoutData.comments.push(doc.data());
+      });
+      return response.json(shoutData);
+    })
+    .catch(error => {
+      console.log(error);
+      response.status(500).response.json({ error: error.code });
+    });
+};
+
 exports.makeShout = (request, response) => {
   if (request.body.body.trim() === "") {
     return response.status(400).json({ body: "Body can't be empty" });

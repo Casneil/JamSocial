@@ -1,7 +1,7 @@
 const functions = require("firebase-functions");
 const firbaseAuth = require("./util/firebaseAuth");
 
-const { getShouts, makeShout } = require("./helpers/shouts");
+const { getShouts, makeShout, getSingleShout } = require("./helpers/shouts");
 const {
   signup,
   login,
@@ -22,6 +22,12 @@ app.post("/login", login);
 app.post("/shout", firbaseAuth, makeShout);
 // Get Shouts///////////////////////////////////
 app.get("/shouts", getShouts);
+// Single shout ////////////////////////
+app.get("/shout/:shoutId", getSingleShout);
+// Like shout /////////////////////////////////
+// Delete shout ///////////////////////////////
+// Comment on shout ///////////////////////////
+// Unlike shout ///////////////////////////////
 // User details
 app.post("/user", firbaseAuth, addUserDetails);
 app.get("/user", firbaseAuth, getAuthedUser);
