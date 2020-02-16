@@ -167,6 +167,62 @@ exports.addUserDetails = (request, response) => {
     });
 };
 
+// get user details
+exports.getUserDetails = (request, response) => {
+  let userData = {};
+  db.doc(`/users/${request.params.name}`)
+    .get()
+    .then(doc => {
+      if (doc.exists) {
+        userData.user = doc.data();
+        return db
+          .collection("shouts")
+          .where("userSubmit", "==", request.params.name)
+          .orderBy("shoutedAt", "desc")
+          .get();
+      } else {
+        return response.status(404).json({ error: "User not found!" });
+      }
+    })
+    .then(data => {
+      userData.shouts = [];
+      data.forEach(doc => {
+        userData.shouts.push({
+          body: doc.data().body,
+          shoutedAt: doc.data().shoutedAt,
+          userSubmit: doc.data().userSubmit,
+          userImage: doc.data().imageUrl,
+          commentCount: doc.data().commentCount,
+          likeCount: doc.data().likeCount,
+          shoutId: doc.id
+        });
+      });
+      return response.json(userData);
+    })
+    .catch(error => {
+      console.error(error);
+      return response.status(500).json({ error: error.code });
+    });
+};
+
+// Mark notifications read ///////////////////
+exports.markRead = (request, response) => {
+  let batch = db.batch();
+  request.body.forEach(notificationId => {
+    const notification = db.doc(`/notifications/${notificationId}`);
+    batch.update(notification, { read: true });
+  });
+  batch
+    .commit()
+    .then(() => {
+      return response.json({ message: "Marked read" });
+    })
+    .catch(error => {
+      console.error(error);
+      return response.status(500).json({ error: error.code });
+    });
+};
+
 // get authed user details
 exports.getAuthedUser = (request, response) => {
   let userData = {};

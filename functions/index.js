@@ -16,7 +16,9 @@ const {
   login,
   uploadImg,
   addUserDetails,
-  getAuthedUser
+  getAuthedUser,
+  markRead,
+  getUserDetails
 } = require("./helpers/users");
 
 // Express
@@ -25,6 +27,10 @@ const app = express();
 
 // Signup///////////////////////////////
 app.post("/signup", signup);
+// get user by name //////////////////////
+app.get("/user/:name", getUserDetails);
+// post at notificatio //////////////////////
+app.post("/notifications", firbaseAuth, markRead);
 // Login//////////////////////////////////////////
 app.post("/login", login);
 // Post Shout////////////////////////////
