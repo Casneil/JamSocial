@@ -1,5 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
+import Proptypes from "prop-types";
 
 import withStyles from "@material-ui/core/styles/withStyles";
 import Card from "@material-ui/core/Card";
@@ -56,6 +57,11 @@ const styles = {
   image: {
     minWidth: 200
   }
+};
+
+ShoutsCard.prototype = {
+  classes: Proptypes.object.isRequired,
+  shouts: Proptypes.object.isRequired
 };
 
 export default withStyles(styles)(ShoutsCard);

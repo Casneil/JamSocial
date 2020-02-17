@@ -92,7 +92,7 @@ exports.login = (request, response) => {
     })
     .catch(error => {
       console.error(error);
-      response
+      return response
         .status(403)
         .json({ general: "Credentials didn't match, please try again." });
     });
