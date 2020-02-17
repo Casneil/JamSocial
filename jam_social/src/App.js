@@ -12,18 +12,18 @@ import { theme } from "./util/styles/styles";
 const token = localStorage.firebaseToken;
 let authed;
 
-if (token) {
-  const decode = jwtDecode(token);
-  var currentTime = Date.now();
+// if (token) {
+//   const decode = jwtDecode(token);
+//   var currentTime = Date.now();
 
-  if (decode.exp * 1000 < currentTime) {
-    window.location.href = "/login";
+//   if (decode.exp * 1000 < currentTime) {
+//     window.location.href = "/login";
 
-    authed = false;
-  } else {
-    authed = true;
-  }
-}
+//     authed = false;
+//   } else {
+//     authed = true;
+//   }
+// }
 
 function App() {
   return (
