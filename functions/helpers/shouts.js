@@ -11,9 +11,9 @@ exports.getShouts = (request, response) => {
         shouts.push({
           shoutId: doc.id,
           body: doc.data().body,
-          userSubmit: doc.data().body.userSubmit,
+          userSubmit: doc.data().userSubmit,
           shoutedAt: doc.data().shoutedAt,
-          userImage: doc.data().imageUrl,
+          image: doc.data().image,
           commentCount: doc.data().commentCount,
           likeCount: doc.data().likeCount
         });
