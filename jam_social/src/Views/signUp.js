@@ -10,7 +10,7 @@ import { Grid, Typography, TextField } from "@material-ui/core";
 import CircularProgress from "@material-ui/core/CircularProgress";
 import Button from "@material-ui/core/Button";
 
-import { styles } from "../styles/styles";
+import { styles } from "../util/styles/styles";
 
 const SignUp = ({ classes, history }) => {
   const [user, setUser] = useState({
