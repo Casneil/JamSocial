@@ -1,10 +1,8 @@
 import React, { useState } from "react";
-import { connect, useSelector, useDispatch } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import { Link } from "react-router-dom";
 import Proptypes from "prop-types";
 import icon from "../assets/icon.png";
-
-import axios from "axios";
 
 import withStyles from "@material-ui/core/styles/withStyles";
 import { Grid, Typography, TextField } from "@material-ui/core";
@@ -15,6 +13,7 @@ import { styles } from "../util/styles/styles";
 import { loginUser } from "../redux/actions/userActions";
 
 const Login = ({ classes, history }) => {
+  console.log(history);
   const [user, setUser] = useState({
     email: "",
     password: ""
@@ -23,34 +22,22 @@ const Login = ({ classes, history }) => {
   const dispatch = useDispatch();
   const users = useSelector(state => state.user);
   const ui = useSelector(state => state.ui);
+
+  const errors = ui;
+  const loading = ui.loading;
   console.log(users, ui);
 
-  const [loading, setLoading] = useState(false);
-  const [errors, setErrors] = useState({});
+  console.log("ERRORS: ", errors, "UI :", ui);
 
   const handleSubmit = event => {
     event.preventDefault();
-    // setLoading(true);
 
-    const userdata = {
+    const userInfo = {
       email: user.email,
       password: user.password
     };
 
-    dispatch(loginUser(userdata, history));
-
-    // axios
-    //   .post(`/login`, userdata)
-    //   .then(response => {
-    //     console.log(response.data);
-    //     localStorage.setItem("firebaseToken", `Bearer ${response.data.token}`);
-    //     setLoading(false);
-    //     history.push("/");
-    //   })
-    //   .catch(error => {
-    //     setErrors(error.response.data);
-    //     setLoading(false);
-    //   });
+    dispatch(loginUser(userInfo, history));
   };
 
   const handleChange = event => {
@@ -77,8 +64,8 @@ const Login = ({ classes, history }) => {
             onChange={handleChange}
             type="email"
             label="Email"
-            error={errors.general ? true : false}
-            helperText={errors.general}
+            error={ui.errors.general ? true : false}
+            helperText={ui.errors.general}
             fullWidth
           />
           <TextField
@@ -89,8 +76,8 @@ const Login = ({ classes, history }) => {
             onChange={handleChange}
             type="password"
             label="Password"
-            error={errors.general ? true : false}
-            helperText={errors.general}
+            error={ui.errors.general ? true : false}
+            helperText={ui.errors.general}
             fullWidth
           />
           {user.email && user.password !== "" ? (

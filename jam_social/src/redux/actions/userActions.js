@@ -7,21 +7,25 @@ import {
 
 import axios from "axios";
 
-export const loginUser = (userdata, history) => dispatch => {
+export const loginUser = (userInfo, history) => dispatch => {
+  console.log(history);
   dispatch({ type: LOADING_UI });
   axios
-    .post(`/login`, userdata)
+    .post(`/login`, userInfo)
     .then(response => {
-      console.log(response.data);
       const firebaseToken = `Bearer ${response.data.token}`;
       localStorage.setItem("firebaseToken", firebaseToken);
-      axios.dfaults.headers.common["Authorization"] = firebaseToken;
+      axios.defaults.headers.common["Authorization"] = firebaseToken;
       dispatch(getUserData());
       dispatch({ type: CLEAR_ERRORS });
       history.push("/");
     })
     .catch(error => {
-      dispatch({ type: SET_ERRORS, payload: error.response.data });
+      dispatch({
+        type: SET_ERRORS,
+        payload: error.response.data,
+        loading: false
+      });
     });
 };
 

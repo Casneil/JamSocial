@@ -16,10 +16,6 @@ const iniitialState = {
 
 export default function(state = iniitialState, action) {
   switch (action.type) {
-    case SET_ERRORS:
-      return {
-        ...state
-      };
     case SET_USER:
       return {
         authed: true,
