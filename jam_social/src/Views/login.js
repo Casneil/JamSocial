@@ -4,30 +4,24 @@ import { Link } from "react-router-dom";
 import Proptypes from "prop-types";
 import icon from "../assets/icon.png";
 
+import { loginUser } from "../redux/actions/userActions";
+
 import withStyles from "@material-ui/core/styles/withStyles";
 import { Grid, Typography, TextField } from "@material-ui/core";
 import CircularProgress from "@material-ui/core/CircularProgress";
 import Button from "@material-ui/core/Button";
 
 import { styles } from "../util/styles/styles";
-import { loginUser } from "../redux/actions/userActions";
 
 const Login = ({ classes, history }) => {
-  console.log(history);
   const [user, setUser] = useState({
     email: "",
     password: ""
   });
 
   const dispatch = useDispatch();
-  const users = useSelector(state => state.user);
-  const ui = useSelector(state => state.ui);
-
-  const errors = ui;
-  const loading = ui.loading;
-  console.log(users, ui);
-
-  console.log("ERRORS: ", errors, "UI :", ui);
+  const errors = useSelector(state => state.ui.errors);
+  const loading = useSelector(state => state.ui.loading);
 
   const handleSubmit = event => {
     event.preventDefault();
@@ -64,8 +58,8 @@ const Login = ({ classes, history }) => {
             onChange={handleChange}
             type="email"
             label="Email"
-            error={ui.errors.general ? true : false}
-            helperText={ui.errors.general}
+            error={errors.general ? true : false}
+            helperText={errors.general}
             fullWidth
           />
           <TextField
@@ -76,8 +70,8 @@ const Login = ({ classes, history }) => {
             onChange={handleChange}
             type="password"
             label="Password"
-            error={ui.errors.general ? true : false}
-            helperText={ui.errors.general}
+            error={errors.general ? true : false}
+            helperText={errors.general}
             fullWidth
           />
           {user.email && user.password !== "" ? (
@@ -118,7 +112,11 @@ Login.prototype = {
   classes: Proptypes.object.isRequired,
   handleSubmit: Proptypes.func.isRequired,
   handleChange: Proptypes.func.isRequired,
-  loginUser: Proptypes.func.isRequired
+  user: Proptypes.object.isRequired,
+  loginUser: Proptypes.func.isRequired,
+  loading: Proptypes.bool.isRequired,
+  errors: Proptypes.array.isRequired,
+  dispatch: Proptypes.func.isRequired
 };
 
 export default withStyles(styles)(Login);

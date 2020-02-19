@@ -6,13 +6,12 @@ const initialState = {
 };
 
 export default function(state = initialState, action) {
-  console.log(action);
   switch (action.type) {
     case CLEAR_ERRORS:
       return {
         ...state,
         loading: false,
-        errors: null
+        errors: []
       };
     case LOADING_UI:
       return {

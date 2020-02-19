@@ -1,9 +1,10 @@
 import React, { useState } from "react";
+import { useSelector, useDispatch } from "react-redux";
 import { Link } from "react-router-dom";
 import Proptypes from "prop-types";
 import icon from "../assets/icon.png";
 
-import axios from "axios";
+import { signUpUser } from "../redux/actions/userActions";
 
 import withStyles from "@material-ui/core/styles/withStyles";
 import { Grid, Typography, TextField } from "@material-ui/core";
@@ -13,16 +14,16 @@ import Button from "@material-ui/core/Button";
 import { styles } from "../util/styles/styles";
 
 const SignUp = ({ classes, history }) => {
+  const dispatch = useDispatch();
+  const errors = useSelector(state => state.ui.errors);
+  const loading = useSelector(state => state.ui.loading);
+
   const [user, setUser] = useState({
     email: "",
     password: "",
     confirmPassword: "",
     name: ""
   });
-
-  const [loading, setLoading] = useState(false);
-  const [errors, setErrors] = useState({});
-
   const handleSubmit = event => {
     event.preventDefault();
 
@@ -32,21 +33,7 @@ const SignUp = ({ classes, history }) => {
       confirmPassword: user.confirmPassword,
       name: user.name
     };
-
-    setLoading(true);
-    axios
-      .post("/signup", newUserToSignUp)
-      .then(response => {
-        console.log(response.data);
-        localStorage.setItem("firebaseToken", `Bearer ${response.data.token}`);
-        setLoading(false);
-        history.push("/");
-      })
-      .catch(error => {
-        setErrors(error.response.data);
-        setLoading(false);
-      });
-    console.log(user);
+    dispatch(signUpUser(newUserToSignUp, history));
   };
 
   const handleChange = event => {
@@ -153,7 +140,12 @@ const SignUp = ({ classes, history }) => {
 SignUp.prototype = {
   classes: Proptypes.object.isRequired,
   handleSubmit: Proptypes.func.isRequired,
-  handleChange: Proptypes.func.isRequired
+  handleChange: Proptypes.func.isRequired,
+  signUpUser: Proptypes.func.isRequired,
+  ui: Proptypes.object.isRequired,
+  errors: Proptypes.array.isRequired,
+  loading: Proptypes.bool.isRequired,
+  dispatch: Proptypes.func.isRequired
 };
 
 export default withStyles(styles)(SignUp);

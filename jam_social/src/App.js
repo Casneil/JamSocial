@@ -30,6 +30,7 @@ function App() {
     <ThemeProvider theme={theme}>
       <Navbar />
       <div>
+        {/* <Router authed={authed} /> */}
         <Router />
       </div>
     </ThemeProvider>
