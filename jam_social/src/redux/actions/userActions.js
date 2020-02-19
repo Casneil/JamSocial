@@ -4,7 +4,7 @@ import {
   CLEAR_ERRORS,
   SET_USER,
   SET_UNAUTHED
-} from "../reducers/types";
+} from "../types";
 
 import axios from "axios";
 

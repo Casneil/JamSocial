@@ -5,7 +5,7 @@ import {
   CLEAR_ERRORS,
   SET_USER,
   SET_AUTHED
-} from "../reducers/types";
+} from "../types";
 
 const iniitialState = {
   authed: false,
