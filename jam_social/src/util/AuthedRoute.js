@@ -1,6 +1,8 @@
 import React from "react";
 import { Route, Redirect } from "react-router-dom";
 
+import Proptypes from "prop-types";
+
 const AuthedRoute = ({ component: Component, authed, ...rest }) => (
   <Route
     {...rest}
@@ -9,5 +11,9 @@ const AuthedRoute = ({ component: Component, authed, ...rest }) => (
     }
   />
 );
+
+AuthedRoute.prototype = {
+  authed: Proptypes.bool.isRequired
+};
 
 export default AuthedRoute;

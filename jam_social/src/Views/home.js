@@ -5,6 +5,7 @@ import axios from "axios";
 import Grid from "@material-ui/core/Grid";
 
 import ShoutsCard from "../components/ShoutsCard";
+import UserCard from "../components/UserCard";
 
 const Home = () => {
   const [data, setData] = useState();
