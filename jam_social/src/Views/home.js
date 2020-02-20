@@ -30,7 +30,7 @@ const Home = () => {
         )}
       </Grid>
       <Grid item sm={4} xs={10}>
-        <p>Profile....</p>
+        <UserCard />
       </Grid>
     </Grid>
   );

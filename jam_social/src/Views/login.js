@@ -22,6 +22,8 @@ const Login = ({ classes, history }) => {
   const dispatch = useDispatch();
   const errors = useSelector(state => state.ui.errors);
   const loading = useSelector(state => state.ui.loading);
+  const users = useSelector(state => state.user);
+  console.log(users);
 
   const handleSubmit = event => {
     event.preventDefault();

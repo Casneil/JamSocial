@@ -1,9 +1,11 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Link } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import Proptypes from "prop-types";
 
 import dayjs from "dayjs";
+
+import { getUserData } from "../redux/actions/userActions";
 
 import { withStyles, Button, Paper, Typography } from "@material-ui/core";
 import MatertialLink from "@material-ui/core/Link";
@@ -11,29 +13,29 @@ import TodayIcon from "@material-ui/icons/Today";
 import LocationOn from "@material-ui/icons/LocationOn";
 import LinkIcon from "@material-ui/icons/Link";
 
-const UserCard = ({
-  classes,
-  user: {
-    credentials: {
-      shoutedAt,
-      name,
-      imageUrl,
-      createdAt,
-      bio,
-      location,
-      website
-    }
-  }
-}) => {
+const UserCard = ({ classes }) => {
   const dispatch = useDispatch();
-  const user = useSelector(state => state.user);
-  console.log(user);
+
+  const {
+    email,
+    name,
+    imageUrl,
+    bio,
+    location,
+    website,
+    joinedOn
+  } = useSelector(state => state.user.credentials);
+
+  const loading = useSelector(state => state.ui.loading);
+  const authed = useSelector(state => state.user.authed);
+
+  console.log(imageUrl);
 
   let User_Card = !loading ? (
     authed ? (
-      <Paper classname={classes.paper}>
+      <Paper className={classes.paper}>
         <div className={classes.profile}>
-          <div className="profile-image">
+          <div className="image-wrapper">
             <img src={imageUrl} alt="shouterPic" className="profile-image" />
           </div>
           <hr />
@@ -68,7 +70,7 @@ const UserCard = ({
               </>
             )}
             <TodayIcon color="primary" />{" "}
-            <span>Joined {dayjs(createdAt).format("MMM YYYY")}</span>
+            <span>Joined {dayjs(joinedOn).format("MMM YYYY")}</span>
           </div>
         </div>
       </Paper>
