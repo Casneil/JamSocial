@@ -68,7 +68,18 @@ export const getUserData = () => dispatch => {
 
 export const logout = () => dispatch => {
   localStorage.removeItem("firebaseToken");
-  delete axios.defaults.headers.common["Authorization"].dispatch({
+  delete axios.defaults.headers.common["Authorization"];
+  dispatch({
     type: SET_UNAUTHED
   });
+};
+
+export const uploadImage = data => dispatch => {
+  dispatch({ type: LOADING_USER });
+  axios
+    .post("/user/image", data)
+    .then(() => {
+      dispatch(getUserData());
+    })
+    .catch(error => console.log(error));
 };

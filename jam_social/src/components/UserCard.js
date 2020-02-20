@@ -5,12 +5,15 @@ import Proptypes from "prop-types";
 
 import dayjs from "dayjs";
 
-import { getUserData } from "../redux/actions/userActions";
+import { uploadImage, loginUser } from "../redux/actions/userActions";
 
 import { withStyles, Button, Paper, Typography } from "@material-ui/core";
+import Tooltip from "@material-ui/core/Tooltip";
 import MatertialLink from "@material-ui/core/Link";
 import TodayIcon from "@material-ui/icons/Today";
 import LocationOn from "@material-ui/icons/LocationOn";
+import EditIcon from "@material-ui/icons/Edit";
+import IconButton from "@material-ui/core/IconButton";
 import LinkIcon from "@material-ui/icons/Link";
 
 const UserCard = ({ classes }) => {
@@ -29,7 +32,20 @@ const UserCard = ({ classes }) => {
   const loading = useSelector(state => state.ui.loading);
   const authed = useSelector(state => state.user.authed);
 
-  console.log(imageUrl);
+  const handleImageUpload = event => {
+    const image = event.target.files[0];
+    // upload to firebase
+    const data = new FormData();
+    data.append("image", image, image.name);
+    dispatch(uploadImage(data));
+
+    console.log("DDDAAAAATA: ", data);
+  };
+
+  const handleEditImage = () => {
+    const fileInput = document.getElementById("image-upload");
+    fileInput.click();
+  };
 
   let User_Card = !loading ? (
     authed ? (
@@ -37,6 +53,17 @@ const UserCard = ({ classes }) => {
         <div className={classes.profile}>
           <div className="image-wrapper">
             <img src={imageUrl} alt="shouterPic" className="profile-image" />
+            <input
+              type="file"
+              id="image-upload"
+              hidden="hidden"
+              onChange={handleImageUpload}
+            />
+            <IconButton onClick={handleEditImage} className="button">
+              <Tooltip title="upload image" placement="bottom-end">
+                <EditIcon color="primary" />
+              </Tooltip>
+            </IconButton>
           </div>
           <hr />
           <div className="profile-details">
