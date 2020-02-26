@@ -64,8 +64,6 @@ node_modules/
 # dotenv environment variables file
 .env
 
-# my keys
-Firebase_key
 
 # gitignore
 .gitignore
