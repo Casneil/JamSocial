@@ -6,4 +6,4 @@ node_modules/
 #gitignore
 .gitignore
 
-**/admin/firebaseConfig
+.key
