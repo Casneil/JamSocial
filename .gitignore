@@ -69,3 +69,5 @@ Firebase_key
 
 # gitignore
 .gitignore
+
+./firebaseConfig
