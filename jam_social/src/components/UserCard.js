@@ -5,12 +5,13 @@ import Proptypes from "prop-types";
 
 import dayjs from "dayjs";
 
-import { uploadImage, loginUser } from "../redux/actions/userActions";
+import { uploadImage, logout } from "../redux/actions/userActions";
 
 import { withStyles, Button, Paper, Typography } from "@material-ui/core";
 import Tooltip from "@material-ui/core/Tooltip";
 import MatertialLink from "@material-ui/core/Link";
 import TodayIcon from "@material-ui/icons/Today";
+import KeyboardReturn from "@material-ui/icons/KeyboardReturn";
 import LocationOn from "@material-ui/icons/LocationOn";
 import EditIcon from "@material-ui/icons/Edit";
 import IconButton from "@material-ui/core/IconButton";
@@ -99,6 +100,11 @@ const UserCard = ({ classes }) => {
             <TodayIcon color="primary" />{" "}
             <span>Joined {dayjs(joinedOn).format("MMM YYYY")}</span>
           </div>
+          <Tooltip title="logout" placement="bottom-end">
+            <IconButton onClick={() => dispatch(logout())}>
+              <KeyboardReturn color="primary" />
+            </IconButton>
+          </Tooltip>
         </div>
       </Paper>
     ) : (

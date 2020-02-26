@@ -40,6 +40,7 @@ export const loginUser = (userInfo, history) => dispatch => {
     .post(`/login`, userInfo)
     .then(response => {
       AuthHeader(response.data.token);
+
       dispatch(getUserData());
       dispatch({ type: CLEAR_ERRORS });
       history.push("/");
