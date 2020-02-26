@@ -6,4 +6,4 @@ node_modules/
 #gitignore
 .gitignore
 
-.key
+./key
