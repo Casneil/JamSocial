@@ -6,4 +6,4 @@ node_modules/
 #gitignore
 .gitignore
 
-./firebaseConfig
+./util/firebaseConfig
